@@ -53,9 +53,11 @@ Priority Scheduling 🏅
 
 Home Page
 
+![image alt](https://github.com/PaulPritam413/CPUSchedulingSimulation/blob/dd7bd26f088a78bc6f1a9dd157515f88238b0551/OS_project/Intopage.png)
+
 Gantt Chart
 
-
+![image alt](https://github.com/PaulPritam413/CPUSchedulingSimulation/blob/dd7bd26f088a78bc6f1a9dd157515f88238b0551/OS_project/ganttchart.png)
 
 
 
