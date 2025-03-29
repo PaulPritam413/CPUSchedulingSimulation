@@ -27,7 +27,7 @@ CPU-Scheduling-Simulator/
 
 1️⃣ Clone the repository
 
-git clone https://github.com/yourusername/CPU-Scheduling-Simulator.git
+git clone https://github.com/PaulPritam413/CPUSchedulingSimulation.git
 
 cd CPU-Scheduling-Simulator
 
