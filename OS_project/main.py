@@ -30,6 +30,48 @@ with st.sidebar:
 
 if selected == "Intro":
     st.header(" :white_check_mark: CPU Scheduling Simulation :clock3:",  divider= 'blue')
+    st.markdown('<h2 class="subtitle">An Overview of Different Scheduling Techniques</h2>', unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        CPU Scheduling is a crucial process in operating systems that determines how CPU time is allocated to processes. 
+        Efficient scheduling improves performance and resource utilization. Below are the main types of scheduling algorithms:
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # CPU Scheduling Algorithms Overview
+    algorithms = {
+        "First Come First Serve (FCFS)": "FCFS is a non-preemptive algorithm where the process that arrives first gets executed first.",
+        "Shortest Job First (SJF)": "SJF selects the process with the shortest burst time. Can be preemptive or non-preemptive.",
+        "Round Robin (RR)": "RR allocates CPU time to each process in a cyclic order with a fixed time quantum.",
+        "Priority Scheduling": "Processes are assigned priority levels. Lower priority numbers get executed first."
+       
+    }
+
+    # Display Algorithms in a Styled Format
+    for algo, desc in algorithms.items():
+        with st.container():
+            st.markdown(f'<div class="container"><h3>📌 {algo}</h3><p class="description">{desc}</p></div>', unsafe_allow_html=True)
+
+    # Footer
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.write("Developed By-----")
+    
+
+    #Profile Section
+    col1, col2 = st.columns([1, 2])  
+
+    with col1:
+        st.markdown('<div class="profile-container">', unsafe_allow_html=True)
+        st.image("profilePic.jpg", caption="Pritam Paul", width=150)  
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<p class="bio">👋 Hi, I am Pritam Paul, a passionate developer with an interest in Operating Systems and Computer Science. I love building applications that help in understanding complex concepts like CPU Scheduling.</p>', unsafe_allow_html=True)
+        st.markdown('<p class="bio">💻 This project is a simple yet powerful tool to visualize different CPU scheduling algorithms.</p>', unsafe_allow_html=True)
+        st.markdown('<p class="bio">🚀 Explore the simulation and deepen your understanding!</p>', unsafe_allow_html=True)
+
 
 if selected == "FCFS":
  
