@@ -307,6 +307,131 @@ if selected == "SJF":
 
 
 if selected == "Round-Robin":
-    st.write("Hii")
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # Round Robin Scheduling Function
+    def round_robin_scheduling(processes, time_quantum):
+        n = len(processes)
+        queue = []
+        completion_time = [-1] * n
+        turnaround_time = [0] * n
+        waiting_time = [0] * n
+        remaining_time = [p[2] for p in processes]  # Burst times
+        timeline = []  # Stores (process_id, start_time, end_time)
+
+        current_time = 0
+        queue.append(0)  # Start with the first process
+        visited = [False] * n
+        visited[0] = True
+
+        while queue:
+            idx = queue.pop(0)  # Get the first process in queue
+            pid, at, bt = processes[idx]
+
+            # If the CPU is idle before execution
+            if current_time < at:
+                timeline.append(("IDLE", current_time, at))
+                current_time = at  
+
+            # Execute process for time quantum or until it finishes
+            exec_time = min(time_quantum, remaining_time[idx])
+            start_time = current_time
+            current_time += exec_time
+            remaining_time[idx] -= exec_time
+
+            # Add process execution to timeline
+            timeline.append((pid, start_time, current_time))
+
+            # If process is completed
+            if remaining_time[idx] == 0:
+                completion_time[idx] = current_time
+                turnaround_time[idx] = completion_time[idx] - at
+                waiting_time[idx] = turnaround_time[idx] - bt
+
+            # Enqueue newly arrived processes
+            for i in range(n):
+                if processes[i][1] <= current_time and remaining_time[i] > 0 and not visited[i]:
+                    queue.append(i)
+                    visited[i] = True
+
+            # If process is not finished, add it back to queue
+            if remaining_time[idx] > 0:
+                queue.append(idx)
+
+        # Prepare results table
+        results = []
+        for i in range(n):
+            results.append([
+                processes[i][0],  # Process ID
+                processes[i][1],  # Arrival Time
+                processes[i][2],  # Burst Time
+                completion_time[i],  # Completion Time
+                turnaround_time[i],  # Turnaround Time
+                waiting_time[i]  # Waiting Time
+            ])
+        
+        return results, timeline
+
+    # Function to plot Gantt Chart
+    def plot_gantt_chart(timeline):
+        fig, ax = plt.subplots(figsize=(10, 4))
+
+        for process_id, start, end in timeline:
+            color = 'lightcoral' if process_id != "IDLE" else 'lightgray'  # Different color for IDLE time
+            ax.barh(y=0, width=end - start, left=start, color=color, edgecolor='black')
+            ax.text(start + (end - start) / 2, 0, f"{process_id}", va='center', ha='center', fontsize=12, fontweight='bold')
+
+        ax.set_yticks([])
+        ax.set_xticks([t[1] for t in timeline] + [timeline[-1][2]])  # Show start & end times
+        ax.set_xlabel("Time")
+        ax.set_title("Gantt Chart for Round Robin Scheduling (Includes CPU Idle Time)")
+        
+        st.pyplot(fig)
+
+    # Streamlit App UI
+    st.title("🔄 Round Robin CPU Scheduling Simulator")
+
+    st.write("Enter process details below to simulate **Round Robin (RR)** Scheduling.")
+
+    # User Input for Time Quantum
+    time_quantum = st.number_input("Time Quantum", min_value=1, value=2, step=1)
+
+    # User Input for Processes
+    num_processes = st.number_input("Number of Processes", min_value=1, max_value=10, value=3, step=1)
+
+    process_list = []
+    for i in range(num_processes):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            pid = st.text_input(f"Process {i+1} ID", f"P{i+1}")
+        with col2:
+            at = st.number_input(f"Arrival Time (P{i+1})", min_value=0, value=i * 2, step=1)
+        with col3:
+            bt = st.number_input(f"Burst Time (P{i+1})", min_value=1, value=5, step=1)
+        
+        process_list.append([pid, at, bt])
+
+    # Run Simulation Button
+    if st.button("Simulate Round Robin Scheduling"):
+        # Run Round Robin Algorithm
+        results, timeline = round_robin_scheduling(process_list, time_quantum)
+
+        # Convert results to DataFrame
+        df = pd.DataFrame(results, columns=["Process ID", "Arrival Time", "Burst Time", "Completion Time", "Turnaround Time", "Waiting Time"])
+        
+        st.subheader("📊 Scheduling Results")
+        st.write(df)
+
+        st.subheader("📈 Gantt Chart")
+        plot_gantt_chart(timeline)
+
+        # Calculate Average Times
+        avg_tat = sum([p[4] for p in results]) / len(results)
+        avg_wt = sum([p[5] for p in results]) / len(results)
+        
+        st.write(f"**🔹 Average Turnaround Time:** {avg_tat:.2f}")
+        st.write(f"**🔹 Average Waiting Time:** {avg_wt:.2f}")
 if selected == "Priority_Scheduling":
     st.write("Hii")
