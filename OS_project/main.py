@@ -434,4 +434,131 @@ if selected == "Round-Robin":
         st.write(f"**🔹 Average Turnaround Time:** {avg_tat:.2f}")
         st.write(f"**🔹 Average Waiting Time:** {avg_wt:.2f}")
 if selected == "Priority_Scheduling":
-    st.write("Hii")
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    # Function to simulate Priority Scheduling
+    def priority_scheduling(processes, preemptive):
+        n = len(processes)
+        processes.sort(key=lambda x: (x[1], x[3]))  # Sort by Arrival Time, then Priority
+
+        completion_time = [-1] * n
+        turnaround_time = [0] * n
+        waiting_time = [0] * n
+        remaining_time = [p[2] for p in processes]  # Burst times
+        timeline = []  # Stores (process_id, start_time, end_time)
+        current_time = 0
+        completed = 0
+
+        while completed < n:
+            # Get ready processes
+            ready_queue = [p for p in processes if p[1] <= current_time and remaining_time[processes.index(p)] > 0]
+            
+            if not ready_queue:
+                next_arrival = min([p[1] for p in processes if remaining_time[processes.index(p)] > 0])
+                timeline.append(("IDLE", current_time, next_arrival))
+                current_time = next_arrival
+                continue
+
+            # Select process with highest priority (lower number = higher priority)
+            ready_queue.sort(key=lambda x: x[3])  
+            selected_process = ready_queue[0]
+            index = processes.index(selected_process)
+
+            start_time = current_time
+            if preemptive:
+                remaining_time[index] -= 1
+                current_time += 1
+                if remaining_time[index] == 0:
+                    completion_time[index] = current_time
+                    completed += 1
+            else:
+                current_time += selected_process[2]
+                remaining_time[index] = 0
+                completion_time[index] = current_time
+                completed += 1
+
+            # Append to timeline
+            if timeline and timeline[-1][0] == selected_process[0]:
+                timeline[-1] = (selected_process[0], timeline[-1][1], current_time)
+            else:
+                timeline.append((selected_process[0], start_time, current_time))
+
+        # Calculate turnaround & waiting times
+        results = []
+        for i in range(n):
+            turnaround_time[i] = completion_time[i] - processes[i][1]
+            waiting_time[i] = turnaround_time[i] - processes[i][2]
+            results.append([
+                processes[i][0],  # Process ID
+                processes[i][1],  # Arrival Time
+                processes[i][2],  # Burst Time
+                processes[i][3],  # Priority
+                completion_time[i],  # Completion Time
+                turnaround_time[i],  # Turnaround Time
+                waiting_time[i]  # Waiting Time
+            ])
+        
+        return results, timeline
+
+    # Function to plot Gantt Chart
+    def plot_gantt_chart(timeline):
+        fig, ax = plt.subplots(figsize=(10, 4))
+
+        for process_id, start, end in timeline:
+            color = 'lightblue' if process_id != "IDLE" else 'lightgray'  # Different color for IDLE time
+            ax.barh(y=0, width=end - start, left=start, color=color, edgecolor='black')
+            ax.text(start + (end - start) / 2, 0, f"{process_id}", va='center', ha='center', fontsize=12, fontweight='bold')
+
+        ax.set_yticks([])
+        ax.set_xticks([t[1] for t in timeline] + [timeline[-1][2]])  # Show start & end times
+        ax.set_xlabel("Time")
+        ax.set_title("Gantt Chart for Priority Scheduling (Includes CPU Idle Time)")
+        
+        st.pyplot(fig)
+
+    # Streamlit App UI
+    st.title("🔹 Priority CPU Scheduling Simulator")
+
+    st.write("Enter process details below to simulate **Priority Scheduling**.")
+
+    # Preemptive or Non-Preemptive Selection
+    preemptive = st.radio("Choose Scheduling Type:", ["Non-Preemptive", "Preemptive"]) == "Preemptive"
+
+    # User Input for Processes
+    num_processes = st.number_input("Number of Processes", min_value=1, max_value=10, value=3, step=1)
+
+    process_list = []
+    for i in range(num_processes):
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            pid = st.text_input(f"Process {i+1} ID", f"P{i+1}")
+        with col2:
+            at = st.number_input(f"Arrival Time (P{i+1})", min_value=0, value=i * 2, step=1)
+        with col3:
+            bt = st.number_input(f"Burst Time (P{i+1})", min_value=1, value=5, step=1)
+        with col4:
+            priority = st.number_input(f"Priority (P{i+1})", min_value=1, value=i + 1, step=1)
+        
+        process_list.append([pid, at, bt, priority])
+
+    # Run Simulation Button
+    if st.button("Simulate Priority Scheduling"):
+        # Run Priority Scheduling Algorithm
+        results, timeline = priority_scheduling(process_list, preemptive)
+
+        # Convert results to DataFrame
+        df = pd.DataFrame(results, columns=["Process ID", "Arrival Time", "Burst Time", "Priority", "Completion Time", "Turnaround Time", "Waiting Time"])
+        
+        st.subheader("📊 Scheduling Results")
+        st.write(df)
+
+        st.subheader("📈 Gantt Chart")
+        plot_gantt_chart(timeline)
+
+        # Calculate Average Times
+        avg_tat = sum([p[5] for p in results]) / len(results)
+        avg_wt = sum([p[6] for p in results]) / len(results)
+        
+        st.write(f"**🔹 Average Turnaround Time:** {avg_tat:.2f}")
+        st.write(f"**🔹 Average Waiting Time:** {avg_wt:.2f}")
